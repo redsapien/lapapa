@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#FFC300">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description"
+        content="La Papa Prohibida - El pecado que Villamaría estaba esperando. Donde el parche se encuentra y el hambre se rinde.">
+    <title>La Papa Prohibida | Villamaría</title>
+    <link rel="icon" type="image/png"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23FFC300'/%3E%3Cpath d='M35 35 L65 65 M65 35 L35 65' stroke='%237B0A02' stroke-width='6'/%3E%3C/svg%3E">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,700;14..32,800;14..32,900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           1. RESET & VARIABLES GLOBALES (INGENIERÍA DE CONVERSIÓN)
+           ========================================================================== */
+        :root {
+            --primary-bg: #0A0A0A;
+            --secondary-bg: #141414;
+            --accent-color: #FFC300;
+            --accent-glow: rgba(255, 195, 0, 0.4);
+            --text-light: #FFFFFF;
+            --text-muted: #FFF0DE;
+            --transition-smooth: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            --aspect-vertical: 1080 / 1350;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            cursor: none;
+            /* Custom cursor implementation */
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            color: var(--text-light);
+            scroll-behavior: smooth;
+        }
+
+        /* CUSTOM CURSOR PRO */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--accent-glow);
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background 0.2s;
+        }
+
+        @media (max-width: 1024px) {
+
+            .cursor-dot,
+            .cursor-outline {
+                display: none;
+            }
+
+            * {
+                cursor: auto;
+            }
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        /* ANIMACIONES DE ENTRADA SCROLL (INTERSECTION OBSERVER) */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: var(--transition-smooth);
+            transition-duration: 0.8s;
+        }
+
+        .reveal-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: var(--transition-smooth);
+            transition-duration: 0.8s;
+        }
+
+        .reveal-left.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: var(--transition-smooth);
+            transition-duration: 0.8s;
+        }
+
+        .reveal-right.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* ==========================================================================
+           2. SECCIÓN 1: HERO
+           ========================================================================== */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            filter: brightness(0.7) contrast(1.15);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 0, 0, 0.3) 0%, rgba(10, 10, 10, 0.9) 100%);
+            z-index: 1;
+        }
+
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 1000px;
+            padding: 0 20px;
+            transform: translateY(-5%);
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 10vw, 6.5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFC300 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            margin-bottom: 25px;
+            animation: pulseTitle 3s infinite alternate;
+        }
+
+        @keyframes pulseTitle {
+            0% {
+                filter: drop-shadow(0 0 15px rgba(255, 195, 0, 0.2));
+            }
+
+            100% {
+                filter: drop-shadow(0 0 30px rgba(255, 195, 0, 0.5));
+            }
+        }
+
+        /* FONDO TRANSLÚCIDO PARA EL SUBTÍTULO */
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+            background: rgba(10, 10, 10, 0.45);
+            /* Translúcido oscuro */
+            backdrop-filter: blur(12px);
+            /* Efecto cristal perfecto */
+            -webkit-backdrop-filter: blur(12px);
+            padding: 18px 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 195, 0, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            color: var(--accent-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: var(--transition-smooth);
+            cursor: none;
+        }
+
+        .scroll-down:hover {
+            transform: translateX(-50%) translateY(-10px);
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .scroll-chevron {
+            width: 20px;
+            height: 20px;
+            border-right: 3px solid var(--accent-color);
+            border-bottom: 3px solid var(--accent-color);
+            transform: rotate(45deg);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: rotate(45deg) translate(0, 0);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: rotate(45deg) translate(8px, 8px);
+                opacity: 1;
+            }
+        }
+
+        /* ==========================================================================
+           3. SECCIÓN 2: CARTA PROHIBIDA (EFECTOS DE PRECIO AVANZADOS)
+           ========================================================================== */
+        .products {
+            padding: 100px 5%;
+            background: var(--primary-bg);
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+
+        /* ===== NUEVAS CLASES DE UTILIDAD PARA ALINEACIÓN REBELDE (sin afectar cards) ===== */
+        .section-header.header-left {
+            text-align: left;
+            margin-left: 0;
+            margin-right: auto;
+            padding-left: 2%;
+        }
+
+        .section-header.header-right {
+            text-align: right;
+            margin-left: auto;
+            margin-right: 0;
+            padding-right: 2%;
+        }
+
+        /* Ajustes de márgenes de seguridad en escritorio (no tocar bordes) */
+        @media (min-width: 992px) {
+            .section-header.header-left {
+                padding-left: max(2%, 20px);
+            }
+
+            .section-header.header-right {
+                padding-right: max(2%, 20px);
+            }
+        }
+
+        /* Ajustes para móviles: mantener legible y dentro del viewport, pero claramente inclinado */
+        @media (max-width: 768px) {
+            .section-header.header-left {
+                text-align: left;
+                padding-left: 5%;
+                margin-right: auto;
+            }
+
+            .section-header.header-right {
+                text-align: right;
+                padding-right: 5%;
+                margin-left: auto;
+            }
+
+            /* Forzamos que el texto no se desborde */
+            .section-header.header-left .section-title,
+            .section-header.header-right .section-title {
+                word-break: break-word;
+                max-width: 95%;
+            }
+
+            .section-header.header-left .section-title {
+                margin-left: 0;
+                margin-right: auto;
+            }
+
+            .section-header.header-right .section-title {
+                margin-left: auto;
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-header.header-left {
+                padding-left: 4%;
+            }
+
+            .section-header.header-right {
+                padding-right: 4%;
+            }
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: rgba(255, 195, 0, 0.1);
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 8px 20px;
+            border-radius: 50px;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 195, 0, 0.3);
+            text-transform: uppercase;
+        }
+
+        /* Aseguramos que las badges no se rompan en alineaciones */
+        .header-left .section-badge {
+            margin-right: auto;
+            margin-left: 0;
+        }
+
+        .header-right .section-badge {
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-light);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: var(--secondary-bg);
+            border-radius: 32px;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255, 195, 0, 0.08);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px);
+            border-color: rgba(255, 195, 0, 0.6);
+            box-shadow: 0 30px 60px -15px rgba(255, 195, 0, 0.2);
+            z-index: 5;
+        }
+
+        .product-img-wrapper {
+            height: 320px;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1f1f1f 0%, #141414 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .product-img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8));
+            z-index: 2;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.1) rotate(2deg);
+            filter: drop-shadow(0 20px 30px rgba(255, 195, 0, 0.3));
+        }
+
+        .product-info {
+            padding: 35px;
+            text-align: center;
+            background: linear-gradient(0deg, #050505 0%, #141414 100%);
+            position: relative;
+        }
+
+        .product-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+        }
+
+        .product-desc {
+            font-size: 1rem;
+            color: rgba(255, 240, 222, 0.6);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            height: 48px;
+        }
+
+        /* Efecto de revelado de precio */
+        .product-price {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--text-light);
+            letter-spacing: -1px;
+            margin-bottom: 25px;
+            display: block;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .product-price.revealed {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            color: var(--accent-color);
+            text-shadow: 0 0 20px rgba(255, 195, 0, 0.4);
+        }
+
+        .product-price span {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #FFF;
+        }
+
+        .order-btn {
+            background: var(--accent-color);
+            color: #0A0A0A;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 60px;
+            font-weight: 900;
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(255, 195, 0, 0.2);
+        }
+
+        .order-btn:hover {
+            background: #FFFFFF;
+            transform: scale(0.96);
+            box-shadow: 0 0 25px rgba(255, 195, 0, 0.6);
+            letter-spacing: 4px;
+        }
+
+        /* ==========================================================================
+           4. SECCIÓN 3: DOMICILIOS AL VUELO (IMÁGENES 1080x1350)
+           ========================================================================== */
+        .delivery {
+            background: linear-gradient(180deg, #0A0A0A 0%, #111111 100%);
+            padding: 120px 5%;
+            border-top: 1px solid rgba(255, 195, 0, 0.05);
+        }
+
+        .delivery-container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .delivery-block {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 80px;
+            margin-bottom: 100px;
+        }
+
+        .delivery-block:last-child {
+            margin-bottom: 0;
+            flex-direction: row-reverse;
+        }
+
+        .delivery-content {
+            flex: 1.2;
+        }
+
+        .delivery-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            line-height: 1.1;
+        }
+
+        .delivery-text {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            opacity: 0.8;
+            line-height: 1.7;
+            margin-bottom: 35px;
+        }
+
+        .delivery-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .feat-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 195, 0, 0.05);
+            padding: 15px 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 195, 0, 0.1);
+            transition: 0.3s;
+        }
+
+        .feat-item:hover {
+            background: rgba(255, 195, 0, 0.15);
+            transform: translateX(10px);
+        }
+
+        .feat-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--accent-color);
+        }
+
+        .feat-text {
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        .delivery-media {
+            flex: 0.8;
+        }
+
+        /* CONTENEDOR DE IMAGEN 1080x1350 */
+        .media-vertical-wrapper {
+            width: 100%;
+            aspect-ratio: var(--aspect-vertical);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 195, 0, 0.25);
+            background: #000;
+            position: relative;
+        }
+
+        .media-vertical-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .vertical-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 1.5s cubic-bezier(0.2, 0.9, 0.4, 1);
+        }
+
+        .media-vertical-wrapper:hover .vertical-img {
+            transform: scale(1.08);
+            filter: brightness(1.1);
+        }
+
+        /* ==========================================================================
+           5. SECCIÓN 4: ZONA DE CONTACTO Y CIERRE (VIDEO 1080x1350)
+           ========================================================================== */
+        .contact {
+            padding: 120px 5%;
+            background: #050505;
+            position: relative;
+            border-top: 1px solid rgba(255, 195, 0, 0.1);
+        }
+
+        .contact-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .contact-info {
+            padding-right: 30px;
+        }
+
+        .contact-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 5vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 30px;
+        }
+
+        .contact-title span {
+            color: var(--accent-color);
+            display: block;
+        }
+
+        .address {
+            margin: 40px 0;
+            padding: 30px 0;
+            border-top: 1px dashed rgba(255, 195, 0, 0.3);
+            border-bottom: 1px dashed rgba(255, 195, 0, 0.3);
+        }
+
+        .address p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+        }
+
+        .footer-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn-wa,
+        .btn-call {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 35px;
+            border-radius: 60px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-wa {
+            background: #25D366;
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-call {
+            background: var(--accent-color);
+            color: #0A0A0A;
+            box-shadow: 0 10px 25px rgba(255, 195, 0, 0.3);
+        }
+
+        .btn-wa:hover,
+        .btn-call:hover {
+            transform: translateY(-5px) scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .contact-media {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .vertical-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* FOOTER LEGAL */
+        .footer-legal {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(255, 195, 0, 0.05);
+            font-size: 0.8rem;
+            color: rgba(255, 240, 222, 0.4);
+            background: #020202;
+            letter-spacing: 1px;
+        }
+
+        /* ==========================================================================
+           6. ELEMENTOS FLOTANTES & SOCIAL PROOF (MÁQUINA DE CONVERSIÓN)
+           ========================================================================== */
+        .float-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .float-wa,
+        .float-call {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transition: var(--transition-smooth);
+            cursor: none;
+        }
+
+        /* WhatsApp Icon Primero */
+        .float-wa {
+            background: #25D366;
+            position: relative;
+        }
+
+        .float-wa::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #25D366;
+            animation: sonar 2s infinite;
+        }
+
+        /* Call Icon Segundo */
+        .float-call {
+            background: var(--accent-color);
+        }
+
+        .float-wa:hover,
+        .float-call:hover {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        @keyframes sonar {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* SOCIAL PROOF TOAST NOTIFICATION */
+        .toast-notification {
+            position: fixed;
+            bottom: -100px;
+            left: 30px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 195, 0, 0.3);
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+        }
+
+        .toast-notification.show {
+            bottom: 30px;
+        }
+
+        .toast-icon {
+            background: var(--accent-color);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-color);
+            animation: pulseDot 1.5s infinite;
+        }
+
+        .toast-text {
+            color: #FFF;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .toast-text span {
+            color: var(--accent-color);
+            font-weight: 800;
+        }
+
+        @keyframes pulseDot {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ==========================================================================
+           7. RESPONSIVIDAD PERFECTA
+           ========================================================================== */
+        @media (max-width: 1024px) {
+            .products-grid {
+                gap: 25px;
+            }
+
+            .product-img-wrapper {
+                height: 260px;
+            }
+
+            .delivery-block {
+                gap: 40px;
+            }
+
+            .contact-grid {
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .product-img-wrapper {
+                height: 300px;
+            }
+
+            .delivery-block,
+            .delivery-block:last-child {
+                flex-direction: column;
+                text-align: center;
+                gap: 35px;
+                margin-bottom: 70px;
+            }
+
+            .delivery-features {
+                grid-template-columns: 1fr;
+            }
+
+            .feat-item {
+                justify-content: center;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .contact-info {
+                padding-right: 0;
+            }
+
+            .address p {
+                justify-content: center;
+            }
+
+            .footer-buttons {
+                justify-content: center;
+            }
+
+            /* Ajuste de imágenes para móvil */
+            .media-vertical-wrapper {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .float-buttons {
+                bottom: 20px;
+                right: 20px;
+                gap: 15px;
+            }
+
+            .float-wa,
+            .float-call {
+                width: 55px;
+                height: 55px;
+            }
+
+            .toast-notification {
+                left: 20px;
+                right: 20px;
+                bottom: -100px;
+                justify-content: center;
+            }
+
+            .toast-notification.show {
+                bottom: 100px;
+            }
+
+            /* Arriba de los botones flotantes */
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2.8rem;
+            }
+
+            .section-title {
+                font-size: 2.2rem;
+            }
+
+            .product-name {
+                font-size: 1.6rem;
+            }
+
+            .delivery-title {
+                font-size: 2rem;
+            }
+
+            .contact-title {
+                font-size: 2.2rem;
+            }
+
+            .product-img-wrapper {
+                height: 240px;
+            }
+
+            .btn-wa,
+            .btn-call {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Estilo para tag de urgencia (no existente en original pero necesario) */
+        .urgency-tag {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #FFC300;
+            color: #0A0A0A;
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            z-index: 15;
+        }
+
+        .tag-discount {
+            background: #FF3B30;
+            color: white;
+        }
+
+        .tag-bestseller {
+            background: #FFC300;
+            color: #0A0A0A;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <div class="toast-notification" id="social-toast">
+        <div class="toast-icon"></div>
+        <div class="toast-text" id="toast-message">Alguien en Villamaría acaba de pedir <span>La Pecamortal</span></div>
+    </div>
+
+    <section class="hero">
+        <video class="hero-video-bg" autoplay muted loop playsinline>
+            <source src="Videos/Ven-a-la-papa-prohibida_WEB.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <canvas id="particle-canvas"></canvas>
+        <div class="hero-content reveal-up">
+            <h1 class="hero-title">EL PECADO QUE VILLAMARÍA ESTABA ESPERANDO</h1>
+            <p class="hero-subtitle">Donde el parche se encuentra y el hambre se rinde. La Pradera tiene un nuevo dueñ@.
+            </p>
+        </div>
+        <div class="scroll-down" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">
+            <span>DESCUBRE</span>
+            <div class="scroll-chevron"></div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN #1 PRODUCTS: ENCABEZADO HACIA LA IZQUIERDA -->
+    <section id="products" class="products">
+        <div class="section-header header-left reveal-up">
+            <span class="section-badge">MENÚ PROHIBIDO</span>
+            <h2 class="section-title">PLATOS ESTRELLA</h2>
+        </div>
+        <div class="products-grid">
+
+            <div class="product-card reveal-left">
+                <div class="product-img-wrapper">
+                    <div class="urgency-tag tag-discount">🔥 25% OFF HOY</div>
+                    <img class="product-img" src="Imagenes/Hamburguesa.webp" alt="Papa Prohibida">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">PECA BURGER</h3>
+                    <p class="product-desc">Carne artesanal, tocineta, cebolla caramelizada, maicitos, mas papas.</p>
+                    <span class="product-price price-animate" data-price="20.000">
+                        $20.000 <span>COP</span>
+                    </span>
+                    <button class="order-btn"
+                        onclick="window.open('https://wa.me/573127256621?text=¡Quiero%20aprovechar%20el%2025%25%20OFF%20en%20la%20Pecaburger!', '_blank')">PECAR
+                        AHORA</button>
+                </div>
+            </div>
+
+            <div class="product-card reveal-right">
+                <div class="product-img-wrapper">
+                    <img class="product-img" src="Imagenes/Desgranado.webp" alt="Papa Dorada">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">DESGRANADO DE LIMÓN</h3>
+                    <p class="product-desc">Pollo, tocineta y queso gratinado sobre papas y nachos. Con Cream y limón.
+                    </p>
+                    <span class="product-price price-animate" data-price="19.000">$19.000 <span>COP</span></span>
+                    <button class="order-btn"
+                        onclick="window.open('https://wa.me/573127256621?text=¡Quiero%20pedir%20el%20desgranado...!', '_blank')">PEDIR
+                        AHORA</button>
+                </div>
+            </div>
+
+            <div class="product-card reveal-left">
+                <div class="product-img-wrapper">
+                    <div class="urgency-tag tag-bestseller">⭐ LO MÁS PEDIDO</div>
+                    <img class="product-img" src="Imagenes/Salchipapa.webp" alt="Hamburguesa Legendaria">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">LA EXCLUSIVA PARA 2</h3>
+                    <p class="product-desc">Papas, salchicha, costilla, pollo, tocineta, queso, guacamole, maicitos.</p>
+                    <span class="product-price price-animate" data-price="40.000">$40.000 <span>COP</span></span>
+                    <button class="order-btn"
+                        onclick="window.open('https://wa.me/573127256621?text=¡Quiero%20la%20Exclusiva%20para%20dos!', '_blank')">LA
+                        QUIERO</button>
+                </div>
+            </div>
+
+            <div class="product-card reveal-right">
+                <div class="product-img-wrapper">
+                    <img class="product-img" src="Imagenes/Patacon.webp" alt="Perro Prohibido">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">PATACON</h3>
+                    <p class="product-desc">Carne o pollo, tocineta, maicitos, papa francesa y queso gratinado.</p>
+                    <span class="product-price price-animate" data-price="20.000">$20.000 <span>COP</span></span>
+                    <button class="order-btn"
+                        onclick="window.open('https://wa.me/573127256621?text=¡Quiero%20el%20Patacon%20ahora!', '_blank')">PEDIR
+                        AHORA</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN #2 DELIVERY: ENCABEZADO HACIA LA DERECHA -->
+    <section class="delivery">
+        <div class="delivery-container">
+            <!-- Aplicamos header-right al primer bloque de delivery? No, debe ser el encabezado general de la sección. Añadimos un section-header arriba del todo siguiendo el diseño -->
+            <div class="section-header header-right reveal-up">
+                <span class="section-badge">DOMICILIO EXPRÉS</span>
+                <h2 class="section-title">LLEGAMOS A TU PARCHÉ</h2>
+            </div>
+            <div class="delivery-block">
+                <div class="delivery-content reveal-left">
+                    <h3 class="delivery-title">Llegamos volando a cada rincón de Villamaría</h3>
+                    <p class="delivery-text">No importa si estás en La Pradera, el parque o las faldas de la turin.
+                        Nuestro sistema táctico de domicilios garantiza que tu pecado llegue caliente, crujiente y en
+                        tiempo récord.</p>
+                    <div class="delivery-features">
+                        <div class="feat-item"><svg class="feat-icon" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M3 10h18M6 6h12M4 18h16a2 2 0 002-2V8a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                <circle cx="7" cy="18" r="2" />
+                                <circle cx="17" cy="18" r="2" />
+                            </svg><span class="feat-text">Pago contra entrega</span></div>
+                        <div class="feat-item"><svg class="feat-icon" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a10 10 0 1010 10 10 10 0 00-10-10z" />
+                                <path d="M12 6v6l4 2" />
+                            </svg><span class="feat-text">Salsas de la casa</span></div>
+                        <div class="feat-item"><svg class="feat-icon" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                            </svg><span class="feat-text">Calidad Premium</span></div>
+                        <div class="feat-item"><svg class="feat-icon" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                            </svg><span class="feat-text">Entrega Flash</span></div>
+                    </div>
+                </div>
+                <div class="delivery-media reveal-right">
+                    <div class="media-vertical-wrapper">
+                        <img class="vertical-img" src="Imagenes/La-tematica-en-la-papa.webp">
+                    </div>
+                </div>
+            </div>
+            <div class="delivery-block">
+                <div class="delivery-content reveal-right">
+                    <h3 class="delivery-title">Velocidad y confianza urbana</h3>
+                    <p class="delivery-text">Más de 500 entregas exitosas. Tu comida no da vueltas, llega directo.
+                        Porque el hambre no entiende de esperas, nosotros tampoco. La Papa Prohibida es la autoridad en
+                        el asfalto.</p>
+                </div>
+                <div class="delivery-media reveal-left">
+                    <div class="media-vertical-wrapper">
+                        <img class="vertical-img" src="Imagenes/Imagen-externa-papa.webp" alt="Papas Fritas Domicilio">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN #3 CONTACT: ENCABEZADO HACIA LA IZQUIERDA -->
+    <section class="contact">
+        <div class="section-header header-left reveal-up">
+            <span class="section-badge">PECADO A DOMICILIO</span>
+            <h2 class="section-title">CONTACTO PROHIBIDO</h2>
+        </div>
+        <div class="contact-grid">
+            <div class="contact-info reveal-left">
+                <h2 class="contact-title">¿Listo para <span>pecar?</span></h2>
+                <div class="address">
+                    <p><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFC300" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg> Calle 6 #12-15, La Pradera, Villamaría, Caldas</p>
+                    <p><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFC300" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg> Lunes a Domingo: 12pm - 10pm</p>
+                    <p><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFC300" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg> lapapaprohibida2@gmail.com</p>
+                </div>
+                <div class="footer-buttons">
+                    <a href="https://wa.me/573127256621?text=¡Hola!%20Quiero%20pedir%20algo%20prohibido%20😈"
+                        target="_blank" class="btn-wa">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12.032 2.002c-5.495 0-9.969 4.47-9.972 9.966a9.923 9.923 0 001.385 5.006L2 22l5.179-1.384a9.978 9.978 0 004.776 1.214h.004c5.495 0 9.972-4.47 9.972-9.966 0-5.497-4.477-9.966-9.972-9.966zM7.95 8.76c.166-.27.342-.27.507-.27h.502c.171 0 .42.061.646.468.25.448.801 1.537.871 1.652.07.115.103.255.032.389-.07.135-.136.202-.259.312-.121.11-.256.253-.364.338-.12.09-.244.176-.104.358.14.182.623 1.01 1.332 1.62.924.795 1.688 1.027 1.938 1.145.202.095.443.073.604-.132.166-.212.674-.782.854-1.052.18-.27.304-.225.514-.135.21.09 1.324.622 1.552.735.228.113.38.169.436.265.057.096.057.558-.119 1.096-.176.537-1.043 1.019-1.438 1.08-.383.059-.76.144-1.174-.02-.52-.21-1.014-.416-1.9-.99-.835-.54-1.427-1.3-1.878-2.006-.233-.368-.632-.98-.632-1.439 0-.46.235-.685.352-.882.117-.197.27-.396.27-.598 0-.202-.14-.488-.222-.68-.082-.192-.138-.422-.068-.583.067-.161.34-.461.466-.604z" />
+                        </svg>
+                        WhatsApp: 312 725 6621
+                    </a>
+                    <a href="tel:3127256621" class="btn-call">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                        </svg>
+                        Llamar Ahora
+                    </a>
+                </div>
+            </div>
+            <div class="contact-media reveal-right">
+                <div class="media-vertical-wrapper">
+                    <video class="vertical-video" autoplay muted loop playsinline>
+                        <source src="Videos/Video-salchipapa_WEB.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="footer-legal">
+        <p>© 2026 LA PAPA PROHIBIDA - Donde el parche se encuentra y el hambre se rinde. Hecho junto a <a
+                href="https://redsapien.com/">Red Sapien</a> con 🔥 para Villamaría.</p>
+    </div>
+
+    <div class="float-buttons">
+        <a href="https://wa.me/573127256621?text=¡Quiero%20cometer%20el%20pecado!" target="_blank" class="float-wa"
+            title="Pedir por WhatsApp">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                <path
+                    d="M12.032 2.002c-5.495 0-9.969 4.47-9.972 9.966a9.923 9.923 0 001.385 5.006L2 22l5.179-1.384a9.978 9.978 0 004.776 1.214h.004c5.495 0 9.972-4.47 9.972-9.966 0-5.497-4.477-9.966-9.972-9.966zM7.95 8.76c.166-.27.342-.27.507-.27h.502c.171 0 .42.061.646.468.25.448.801 1.537.871 1.652.07.115.103.255.032.389-.07.135-.136.202-.259.312-.121.11-.256.253-.364.338-.12.09-.244.176-.104.358.14.182.623 1.01 1.332 1.62.924.795 1.688 1.027 1.938 1.145.202.095.443.073.604-.132.166-.212.674-.782.854-1.052.18-.27.304-.225.514-.135.21.09 1.324.622 1.552.735.228.113.38.169.436.265.057.096.057.558-.119 1.096-.176.537-1.043 1.019-1.438 1.08-.383.059-.76.144-1.174-.02-.52-.21-1.014-.416-1.9-.99-.835-.54-1.427-1.3-1.878-2.006-.233-.368-.632-.98-.632-1.439 0-.46.235-.685.352-.882.117-.197.27-.396.27-.598 0-.202-.14-.488-.222-.68-.082-.192-.138-.422-.068-.583.067-.161.34-.461.466-.604z" />
+            </svg>
+        </a>
+        <a href="tel:3127256621" class="float-call" title="Llamar para pedir">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5">
+                <path
+                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+            </svg>
+        </a>
+    </div>
+
+    <script>
+        // ==========================================================================
+        // SCRIPT MAESTRO - CONVERSIÓN & PERFORMANCE
+        // ==========================================================================
+
+        // 1. SISTEMA DE PARTÍCULAS AMARILLO HAMBRE
+        const canvas = document.getElementById('particle-canvas');
+        let ctx = canvas.getContext('2d');
+        let particles = [];
+        let particleCount = window.innerWidth < 768 ? 60 : 120; // Optimización móvil
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.8;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.4 + 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 195, 0, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+        resizeCanvas();
+        initParticles();
+        animateParticles();
+
+        // 2. EFECTO SCROLL SUAVE Y NAVEGACIÓN NATIVA
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // 3. DETECCIÓN DE REPRODUCCIÓN AUTOMÁTICA DE VIDEOS (FORZAR PLAY)
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => { video.play().catch(e => console.log("Auto-play falló, pero está bien")); });
+
+        // 4. TOUCH PREVENT ZOOM (Calidad nativa de App)
+        document.addEventListener('touchmove', function (event) {
+            if (event.scale && event.scale !== 1) event.preventDefault();
+        }, { passive: false });
+
+        // 5. CUSTOM CURSOR PRO (Deshabilitado en móvil por CSS)
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', function (e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Animación suave para el anillo externo
+            cursorOutline.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 500, fill: "forwards" });
+        });
+
+        document.querySelectorAll('a, button, .scroll-down').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.style.width = '60px';
+                cursorOutline.style.height = '60px';
+                cursorOutline.style.background = 'rgba(255,195,0,0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.style.width = '40px';
+                cursorOutline.style.height = '40px';
+                cursorOutline.style.background = 'transparent';
+            });
+        });
+
+        // 6. INTERSECTION OBSERVER (Animaciones de Scroll y Revelado de Precio)
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+
+        const scrollObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+
+                    // Si es un producto, revelar precio con delay
+                    const priceElem = entry.target.querySelector('.price-animate');
+                    if (priceElem) {
+                        setTimeout(() => { priceElem.classList.add('revealed'); }, 300);
+                    }
+                    observer.unobserve(entry.target); // Solo animar una vez
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right').forEach(el => {
+            scrollObserver.observe(el);
+        });
+
+        // 7. SOCIAL PROOF TOAST (ACTUALIZADO CON NOMBRES REALES DEL MENÚ)
+        const names = ['Carlos', 'Andrés', 'Daniela', 'Felipe', 'María', 'Camilo'];
+        const places = ['La Pradera', 'El Centro', 'Villamaría', 'Florida'];
+        // PRODUCTOS ACTUALIZADOS según el menú real (Sección "Menú Prohibido")
+        const products = ['Peca Burger', 'La Exclusiva para 2', 'Súper Maicitos', 'Desgranado de Limón', 'Patacon'];
+        const toast = document.getElementById('social-toast');
+        const toastMsg = document.getElementById('toast-message');
+
+        function showRandomToast() {
+            // No mostrar si está muy arriba haciendo scroll
+            if (window.scrollY < 500) return;
+
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const randomPlace = places[Math.floor(Math.random() * places.length)];
+            const randomProduct = products[Math.floor(Math.random() * products.length)];
+
+            toastMsg.innerHTML = `${randomName} de ${randomPlace} acaba de pedir <span>${randomProduct}</span>`;
+            toast.classList.add('show');
+
+            // Ocultar después de 4 segundos
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        }
+
+        // Disparar notificaciones en intervalos aleatorios (entre 10s y 25s)
+        function scheduleNextToast() {
+            const nextTime = Math.random() * (25000 - 10000) + 10000;
+            setTimeout(() => {
+                showRandomToast();
+                scheduleNextToast();
+            }, nextTime);
+        }
+
+        // Iniciar sistema de Social Proof después de 8 segundos
+        setTimeout(scheduleNextToast, 8000);
+
+    </script>
+</body>
+
+</html>
